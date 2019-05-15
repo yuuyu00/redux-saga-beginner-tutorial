@@ -1,4 +1,5 @@
-import { put, call, takeEvery, all } from "redux-saga/effects";
+import { put, call, all, fork } from "redux-saga/effects";
+import { takeEvery, delay } from "redux-saga";
 import axios from "axios";
 
 export const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -40,6 +41,21 @@ export function* fetchUsers() {
   yield console.log(res);
   yield put({ type: "FETCH_POSTS" });
 }
+
+function* runRequestSuggest(text) {
+  const { data, error } = yield call(
+    axios.get,
+    "https://jsonplaceholder.typicode.com/users"
+  );
+  console.log(data);
+}
+
+const forkLater = (task, ...arg) => {
+  return fork(function*() {
+    yield call(delay, 1000);
+    yield fork(task, ...args);
+  });
+};
 
 export default function* rootSagas() {
   yield all([watchFetchUsers(), watchFetchPosts()]);
